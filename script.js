@@ -1,3 +1,6 @@
+let list = [];
+
+let carEmoji;
 function addItem(e) {
 	e.preventDefault();
 
@@ -15,7 +18,11 @@ function addItem(e) {
 			"border-b-2",
 			"border-gray-300",
 		);
-		let carEmogi = document.createElement("span");
+		carEmoji = document.createElement("span");
+		carEmoji.setAttribute("id", "remove");
+		carEmoji.addEventListener("click", function (e) {
+			e.target.parentNode.remove();
+		});
 		let selectedModel = document.createElement("span");
 		let selectedColor = document.createElement("span");
 		switch (carColor) {
@@ -60,15 +67,25 @@ function addItem(e) {
 				);
 		}
 
-		carEmogi.textContent = "🚘";
+		carEmoji.textContent = "❎   ";
 		selectedModel.textContent = carModel;
 		selectedColor.textContent = carColor;
 
-		newOrder.appendChild(carEmogi);
+		let signs = {
+			model: `${carModel}`,
+			color: `${carColor}`,
+		};
+
+		newOrder.appendChild(carEmoji);
 		newOrder.appendChild(selectedModel);
 		newOrder.appendChild(selectedColor);
 
 		document.querySelector("#list-item").appendChild(newOrder);
+		list.push(signs);
+
+		localStorage.setItem("carList", JSON.stringify(list));
+		
+		console.log(list);
 		document.querySelector("#car-model").value = "";
 		document.querySelector("#car-color").value = "";
 	} else {
@@ -108,6 +125,5 @@ function isValidated() {
 
 	return isModelValid && isColorValid;
 }
-
 
 document.querySelector("#add").addEventListener("click", addItem);
