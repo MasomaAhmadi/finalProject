@@ -1,91 +1,65 @@
-let list = [];
+let list = JSON.parse(localStorage.getItem("carList")) || [];
 
-let carEmoji;
+function createListItem(carModel, carColor) {
+	let newOrder = document.createElement("li");
+	newOrder.classList.add(
+		"p-4",
+		"mb-4",
+		"py-3",
+		"border-b-2",
+		"border-gray-300",
+	);
+
+	let carEmoji = document.createElement("span");
+	carEmoji.textContent = "❎   ";
+	carEmoji.setAttribute("id", "remove");
+	carEmoji.addEventListener("click", function (e) {
+		let index = list.findIndex(
+			(item) => item.model === carModel && item.color === carColor,
+		);
+		if (index !== -1) {
+			list.splice(index, 1);
+			localStorage.setItem("carList", JSON.stringify(list));
+		}
+		e.target.parentNode.remove();
+	});
+
+	let selectedModel = document.createElement("span");
+	selectedModel.textContent = carModel;
+
+	let selectedColor = document.createElement("span");
+	selectedColor.textContent = carColor;
+	selectedColor.classList.add(
+		"ml-4",
+		"rounded-lg",
+		"py-1",
+		"px-2",
+		carColor === "White" ? "bg-white" : "text-white",
+		carColor === "red"
+			? "bg-red-600"
+			: carColor === "Black"
+			? "bg-black"
+			: "bg-purple-600",
+	);
+
+	newOrder.appendChild(carEmoji);
+	newOrder.appendChild(selectedModel);
+	newOrder.appendChild(selectedColor);
+
+	document.querySelector("#list-item").appendChild(newOrder);
+}
+
 function addItem(e) {
 	e.preventDefault();
 
-	console.log("Running add function");
+	let carModel = document.querySelector("#car-model").value.trim();
+	let carColor = document.querySelector("#car-color").value.trim();
 
-	let carModel = document.querySelector("#car-model").value;
-	let carColor = document.querySelector("#car-color").value;
-
-	if (isValidated()) {
-		let newOrder = document.createElement("li");
-		newOrder.classList.add(
-			"p-4",
-			"mb-4",
-			"py-3",
-			"border-b-2",
-			"border-gray-300",
-		);
-		carEmoji = document.createElement("span");
-		carEmoji.setAttribute("id", "remove");
-		carEmoji.addEventListener("click", function (e) {
-			e.target.parentNode.remove();
-		});
-		let selectedModel = document.createElement("span");
-		let selectedColor = document.createElement("span");
-		switch (carColor) {
-			case "red":
-				selectedColor.classList.add(
-					"bg-red-600",
-					"text-white",
-					"ml-4",
-					"rounded-lg",
-					"py-1",
-					"px-2",
-				);
-				break;
-			case "Black":
-				selectedColor.classList.add(
-					"bg-black",
-					"text-white",
-					"ml-4",
-					"rounded-lg",
-					"py-1",
-					"px-2",
-				);
-
-				break;
-			case "White":
-				selectedColor.classList.add(
-					"bg-white",
-					"ml-4",
-					"rounded-lg",
-					"py-1",
-					"px-2",
-				);
-				break;
-			default:
-				selectedColor.classList.add(
-					"bg-purple-600",
-					"text-white",
-					"ml-4",
-					"rounded-lg",
-					"py-1",
-					"px-2",
-				);
-		}
-
-		carEmoji.textContent = "❎   ";
-		selectedModel.textContent = carModel;
-		selectedColor.textContent = carColor;
-
-		let signs = {
-			model: `${carModel}`,
-			color: `${carColor}`,
-		};
-
-		newOrder.appendChild(carEmoji);
-		newOrder.appendChild(selectedModel);
-		newOrder.appendChild(selectedColor);
-
-		document.querySelector("#list-item").appendChild(newOrder);
+	if (isValidated(carModel, carColor)) {
+		let signs = { model: carModel, color: carColor };
 		list.push(signs);
-
 		localStorage.setItem("carList", JSON.stringify(list));
-		
-		console.log(list);
+		createListItem(carModel, carColor);
 		document.querySelector("#car-model").value = "";
 		document.querySelector("#car-color").value = "";
 	} else {
@@ -93,37 +67,26 @@ function addItem(e) {
 	}
 }
 
-function isValidated() {
-	console.log("Running isValidated function");
-	let carModel = document.querySelector("#car-model").value.trim();
-	let carColor = document.querySelector("#car-color").value.trim();
 
-	let isModelValid = true;
-	let isColorValid = true;
+function isValidated(carModel, carColor) {
+	let isModelValid = carModel !== "";
+	let isColorValid = carColor !== "";
 
-	if (carModel === "") {
-		document
-			.querySelector("#car-model")
-			.classList.add("border-1", "border-red-300");
-		isModelValid = false;
-	} else {
-		document
-			.querySelector("#car-model")
-			.classList.remove("border-1", "border-red-300");
-	}
-
-	if (carColor === "") {
-		document
-			.querySelector("#car-color")
-			.classList.add("border-1", "border-red-300");
-		isColorValid = false;
-	} else {
-		document
-			.querySelector("#car-color")
-			.classList.remove("border-1", "border-red-300");
-	}
+	document
+		.querySelector("#car-model")
+		.classList.toggle("border-1", "border-red-300", !isModelValid);
+	document
+		.querySelector("#car-color")
+		.classList.toggle("border-1", "border-red-300", !isColorValid);
 
 	return isModelValid && isColorValid;
 }
 
+
 document.querySelector("#add").addEventListener("click", addItem);
+
+window.onload = function () {
+	list.forEach(function (sign) {
+		createListItem(sign.model, sign.color);
+	});
+};
